@@ -1,15 +1,12 @@
-
 import { motion, useReducedMotion } from "framer-motion";
-import {
-  ArrowUpLeft,
-  ArrowUp,
-  Stethoscope,
-} from "lucide-react";
+import { ArrowUpLeft, ArrowUp, Stethoscope } from "lucide-react";
+import type { MouseEvent } from "react";
 
 const footerLinks = [
   { name: "الرئيسية", href: "#home" },
   { name: "خدماتنا", href: "#services" },
   { name: "لماذا نحن", href: "#why-us" },
+  { name: "الشهادات", href: "#certificates" },
   { name: "نتائج المرضى", href: "#results" },
   { name: "آراء المرضى", href: "#testimonials" },
   { name: "تواصل معنا", href: "#contact" },
@@ -19,7 +16,7 @@ export default function Footer() {
   const reducedMotion = Boolean(useReducedMotion());
 
   const scrollToSection = (
-    event: React.MouseEvent<HTMLAnchorElement>,
+    event: MouseEvent<HTMLAnchorElement>,
     href: string
   ) => {
     const section = document.querySelector(href);
@@ -54,9 +51,7 @@ export default function Footer() {
           initial={reducedMotion ? false : { opacity: 0.7, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{
-            duration: reducedMotion ? 0 : 0.7,
-          }}
+          transition={{ duration: reducedMotion ? 0 : 0.7 }}
           className="flex flex-col items-center text-center"
         >
           <div className="flex items-center gap-4">
@@ -104,14 +99,8 @@ export default function Footer() {
                       ? false
                       : { pathLength: 0, opacity: 0.4 }
                   }
-                  whileInView={{
-                    pathLength: 1,
-                    opacity: 1,
-                  }}
-                  viewport={{
-                    once: true,
-                    amount: 0.8,
-                  }}
+                  whileInView={{ pathLength: 1, opacity: 1 }}
+                  viewport={{ once: true, amount: 0.8 }}
                   transition={{
                     duration: reducedMotion ? 0 : 1.5,
                     ease: [0.22, 1, 0.36, 1],
@@ -129,19 +118,9 @@ export default function Footer() {
 
             <motion.a
               href="#contact"
-              onClick={(event) =>
-                scrollToSection(event, "#contact")
-              }
-              whileHover={
-                reducedMotion
-                  ? undefined
-                  : { y: -4 }
-              }
-              whileTap={
-                reducedMotion
-                  ? undefined
-                  : { scale: 0.97 }
-              }
+              onClick={(event) => scrollToSection(event, "#contact")}
+              whileHover={reducedMotion ? undefined : { y: -4 }}
+              whileTap={reducedMotion ? undefined : { scale: 0.97 }}
               className="group mx-auto mt-9 inline-flex min-h-[58px] items-center justify-center gap-4 rounded-full bg-[#032654] px-8 text-base font-bold text-white shadow-[0_14px_35px_rgba(3,38,84,0.16)] transition-[background-color,box-shadow] duration-300 hover:bg-[#10447C] hover:shadow-[0_18px_40px_rgba(3,38,84,0.23)]"
             >
               احجز استشارتك
@@ -162,28 +141,15 @@ export default function Footer() {
             <motion.a
               key={link.href}
               href={link.href}
-              onClick={(event) =>
-                scrollToSection(event, link.href)
-              }
-              initial={
-                reducedMotion
-                  ? false
-                  : { opacity: 0.6, y: 10 }
-              }
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
+              onClick={(event) => scrollToSection(event, link.href)}
+              initial={reducedMotion ? false : { opacity: 0.6, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{
                 duration: reducedMotion ? 0 : 0.45,
                 delay: reducedMotion ? 0 : index * 0.06,
               }}
-              whileHover={
-                reducedMotion
-                  ? undefined
-                  : { y: -3 }
-              }
+              whileHover={reducedMotion ? undefined : { y: -3 }}
               className="rounded-full px-4 py-2.5 text-sm font-semibold text-[#475569] transition-colors duration-300 hover:bg-[#EAF5FD] hover:text-[#032654] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6BBAEF] md:text-base"
             >
               {link.name}
@@ -196,11 +162,7 @@ export default function Footer() {
         <div className="h-[12px] border-y border-[#DCEAF5] bg-[repeating-linear-gradient(135deg,#DCEAF5_0px,#DCEAF5_1px,transparent_1px,transparent_9px)]" />
 
         <motion.div
-          initial={
-            reducedMotion
-              ? false
-              : { scaleX: 0 }
-          }
+          initial={reducedMotion ? false : { scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
           viewport={{ once: true }}
           transition={{
@@ -219,9 +181,7 @@ export default function Footer() {
 
         <a
           href="#home"
-          onClick={(event) =>
-            scrollToSection(event, "#home")
-          }
+          onClick={(event) => scrollToSection(event, "#home")}
           className="group inline-flex items-center gap-2 text-sm font-bold text-[#032654] transition-colors hover:text-[#287DB7]"
         >
           العودة إلى الأعلى

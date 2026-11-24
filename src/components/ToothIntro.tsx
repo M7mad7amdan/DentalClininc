@@ -1,16 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 const curtainTransition = {
   delay: 1.2,
   duration: 1.1,
-  ease: [0.76, 0, 0.24, 1] as [
-    number,
-    number,
-    number,
-    number
-  ],
+  ease: [0.76, 0, 0.24, 1] as [number, number, number, number],
 };
 
 function ToothIllustration() {
@@ -21,13 +15,7 @@ function ToothIllustration() {
       aria-hidden="true"
     >
       <defs>
-        <linearGradient
-          id="intro-enamel"
-          x1="0"
-          y1="0"
-          x2="1"
-          y2="1"
-        >
+        <linearGradient id="intro-enamel" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#FFFFFF" />
           <stop offset="58%" stopColor="#F8FCFF" />
           <stop offset="100%" stopColor="#CFE6F5" />
@@ -35,7 +23,7 @@ function ToothIllustration() {
       </defs>
 
       <path
-        d="M36 20 C13 15 9 38 16 72 C23 104 35 125 42 157 C48 181 63 182 69 157 L76 128 Q80 115 85 128 L94 157 C101 182 116 181 122 157 C129 124 143 103 148 72 C154 38 143 15 122 20 C104 24 94 31 82 27 C61 19 49 17 36 20Z"
+        d="M36 20 C22 23 14 30 14 48 C14 57 14 63 16 72 C23 104 35 125 42 157 C48 181 63 182 69 157 L76 128 Q80 115 85 128 L94 157 C101 182 116 181 122 157 C129 124 143 103 148 72 C154 38 143 15 122 20 C104 24 94 31 82 27 C61 19 49 17 36 20Z"
         fill="url(#intro-enamel)"
         stroke="#82B4D5"
         strokeWidth="2"
@@ -74,9 +62,7 @@ export default function ToothIntro() {
       return;
     }
 
-    const previousOverflow =
-      document.body.style.overflow;
-
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     const timeout = window.setTimeout(() => {
@@ -112,11 +98,7 @@ export default function ToothIntro() {
       />
 
       <motion.div
-        initial={{
-          opacity: 0,
-          scale: 0.88,
-          y: 12,
-        }}
+        initial={{ opacity: 0, scale: 0.88, y: 12 }}
         animate={{
           opacity: [0, 1, 1, 0],
           scale: [0.88, 1, 1, 1.08],
@@ -135,10 +117,7 @@ export default function ToothIntro() {
       </motion.div>
 
       <motion.p
-        initial={{
-          opacity: 0,
-          y: 12,
-        }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{
           opacity: [0, 1, 1, 0],
           y: [12, 0, 0, -8],

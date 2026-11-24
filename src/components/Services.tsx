@@ -21,7 +21,13 @@ type ToothMark =
   | "filling"
   | "gum"
   | "braces"
-  | "shine";
+  | "shine"
+  | "bone"
+  | "hollywood"
+  | "rehabilitation"
+  | "digital"
+  | "prosthetics"
+  | "pediatric";
 
 type Service = {
   id: string;
@@ -51,10 +57,10 @@ const services: Service[] = [
   },
   {
     id: "nerve",
-    title: "علاج العصب",
+    title: "علاج عصب الأسنان (البسيط والمتقدم)",
     subtitle: "عناية دقيقة من الداخل",
     description:
-      "يساعد علاج العصب على معالجة الالتهاب أو العدوى داخل السن، وتنظيف قنوات الجذور وحشوها عند الحاجة، بهدف الحفاظ على السن الطبيعي قدر الإمكان.",
+      "يشمل علاج عصب الأسنان في الحالات البسيطة والمتقدمة معالجة الالتهاب أو العدوى داخل السن وتنظيف قنوات الجذور وحشوها عند الحاجة، بهدف الحفاظ على السن الطبيعي قدر الإمكان.",
     benefits: [
       "معالجة قنوات الجذور",
       "التعامل مع الالتهاب",
@@ -68,7 +74,7 @@ const services: Service[] = [
     title: "زراعة الأسنان",
     subtitle: "استعادة وظيفة الابتسامة",
     description:
-      "زراعة الأسنان أحد الخيارات لتعويض الأسنان المفقودة، وتساعد على استعادة وظيفة المضغ والمظهر الطبيعي، بعد تقييم ملاءمة الحالة للعلاج.",
+      "تشمل زراعة الأسنان الحالات البسيطة والمتقدمة لتعويض الأسنان المفقودة والمساعدة على استعادة وظيفة المضغ والمظهر الطبيعي، بعد تقييم ملاءمة كل حالة للعلاج.",
     benefits: [
       "تعويض الأسنان المفقودة",
       "تحسين وظيفة المضغ",
@@ -82,7 +88,7 @@ const services: Service[] = [
     title: "فينيرز وتلبيس زركون",
     subtitle: "جمال التفاصيل وتناسق الأسنان",
     description:
-      "تشمل هذه الخدمة خيارات تجميلية وترميمية، مثل الفينير وقشور الأسنان وتلبيسات الزركون، لتحسين شكل الأسنان أو ترميمها وفق احتياجات كل حالة.",
+      "تشمل هذه الخدمة الفينير والقشور الخزفية وتلبيسات الزركون لتحسين مظهر الأسنان أو ترميمها، حسب متطلبات الحالة وخطة العلاج.",
     benefits: [
       "تحسين مظهر الأسنان",
       "خيارات تجميل وترميم",
@@ -93,10 +99,10 @@ const services: Service[] = [
   },
   {
     id: "filling",
-    title: "حشوات تجميلية",
+    title: "الحشوات التجميلية والعلاجية",
     subtitle: "ترميم يحافظ على جمال السن",
     description:
-      "تُستخدم الحشوات التجميلية لإصلاح أجزاء من الأسنان المتضررة أو المكسورة، مع مراعاة اختيار لون وشكل يتناسبان مع الأسنان الطبيعية.",
+      "تشمل الحشوات التجميلية والعلاجية معالجة الأجزاء المتضررة من الأسنان وترميمها، مع مراعاة اختيار المواد واللون المناسبين لكل حالة.",
     benefits: [
       "ترميم الأجزاء المتضررة",
       "لون متناسق مع الأسنان",
@@ -121,10 +127,10 @@ const services: Service[] = [
   },
   {
     id: "braces",
-    title: "تقويم الأسنان",
+    title: "تقويم الأسنان مع أخصائي",
     subtitle: "لابتسامة أكثر انتظامًا",
     description:
-      "يساعد تقويم الأسنان على معالجة مشكلات اصطفاف الأسنان والإطباق، من خلال خطة علاجية تُحدد بعد الفحص والتقييم.",
+      "يُساعد تقويم الأسنان مع أخصائي على معالجة مشكلات الاصطفاف والإطباق، من خلال خطة علاجية تُحدد بعد الفحص والتقييم.",
     benefits: [
       "تحسين اصطفاف الأسنان",
       "معالجة مشكلات الإطباق",
@@ -135,10 +141,10 @@ const services: Service[] = [
   },
   {
     id: "whitening",
-    title: "تبييض الأسنان",
+    title: "تبييض الأسنان بالليزر",
     subtitle: "إشراقة طبيعية لابتسامتك",
     description:
-      "يهدف تبييض الأسنان إلى تحسين لونها وتقليل بعض التصبغات باستخدام الطريقة المناسبة بعد تقييم حالة الأسنان واللثة.",
+      "يشمل تبييض الأسنان بالليزر وفق ملاءمة الحالة، بهدف تحسين لون الأسنان والتقليل من بعض التصبغات بعد تقييم صحة الأسنان واللثة.",
     benefits: [
       "تحسين لون الأسنان",
       "التقليل من التصبغات",
@@ -146,6 +152,90 @@ const services: Service[] = [
     ],
     mark: "shine",
     accent: "#E7F6FE",
+  },
+  {
+    id: "bone",
+    title: "زراعة العظم (البسيطة والمتقدمة)",
+    subtitle: "دعم العظم عند الحاجة للزراعة",
+    description:
+      "تشمل إجراءات زراعة العظم البسيطة والمتقدمة دعم أو تعويض العظم في المواضع التي تحتاج إلى ذلك، وفق الفحص والتصوير وخطة العلاج المناسبة لكل حالة.",
+    benefits: [
+      "تقييم كمية العظم",
+      "خيارات للحالات البسيطة والمتقدمة",
+      "التحضير للعلاج المناسب",
+    ],
+    mark: "bone",
+    accent: "#E5F3FC",
+  },
+  {
+    id: "hollywood",
+    title: "تجميل الأسنان (القشور الخزفية وابتسامة هوليود)",
+    subtitle: "القشور الخزفية وتناسق الابتسامة",
+    description:
+      "يشمل تجميل الأسنان بالقشور الخزفية وخيارات ابتسامة هوليود دراسة شكل الأسنان وتناسقها مع الوجه، ثم اختيار الإجراءات المناسبة حسب احتياجات الحالة.",
+    benefits: [
+      "القشور الخزفية",
+      "خيارات ابتسامة هوليود",
+      "تناسق الشكل واللون",
+    ],
+    mark: "hollywood",
+    accent: "#E8F5FE",
+  },
+  {
+    id: "rehabilitation",
+    title: "إعادة تأهيل الفم والأسنان الشاملة",
+    subtitle: "خطة متكاملة لصحة الفم ووظيفته",
+    description:
+      "تُعنى إعادة التأهيل الشاملة بتقييم حالة الفم والأسنان ووضع خطة علاجية متكاملة قد تجمع بين أكثر من إجراء ترميمي أو وظيفي وفق حاجة المريض.",
+    benefits: [
+      "تقييم شامل للحالة",
+      "تنسيق مراحل العلاج",
+      "الاهتمام بالشكل والوظيفة",
+    ],
+    mark: "rehabilitation",
+    accent: "#E4F0FB",
+  },
+  {
+    id: "digital-smile",
+    title: "تصميم الابتسامة الرقمي (DSD)",
+    subtitle: "تصوّر مدروس لشكل الابتسامة",
+    description:
+      "يساعد تصميم الابتسامة الرقمي (DSD) على دراسة تناسق الأسنان والابتسامة باستخدام أدوات تخطيط رقمية، ومناقشة التصور العلاجي قبل البدء بالإجراءات المناسبة.",
+    benefits: [
+      "تخطيط رقمي للابتسامة",
+      "دراسة التناسق الجمالي",
+      "مناقشة الخيارات العلاجية",
+    ],
+    mark: "digital",
+    accent: "#EDF8FE",
+  },
+  {
+    id: "prosthetics",
+    title: "تركيبات وتلبيسات الأسنان",
+    subtitle: "ترميم الأسنان واستعادة وظيفتها",
+    description:
+      "تُستخدم تركيبات وتلبيسات الأسنان لترميم الأسنان المتضررة أو تعويض ما يلزم وفق الحالة، مع الاهتمام بملاءمة التركيبة ووظيفتها ومظهرها الطبيعي.",
+    benefits: [
+      "خيارات للترميم والتعويض",
+      "استعادة وظيفة الأسنان",
+      "الاهتمام بالتناسق والمظهر",
+    ],
+    mark: "prosthetics",
+    accent: "#E1F0FA",
+  },
+  {
+    id: "pediatric",
+    title: "علاجات الأطفال",
+    subtitle: "عناية تناسب احتياجات الصغار",
+    description:
+      "تشمل علاجات الأطفال فحص صحة الفم والأسنان والتعامل مع المشكلات السنية المناسبة لأعمارهم، مع مراعاة توفير تجربة مريحة قدر الإمكان.",
+    benefits: [
+      "فحص أسنان الأطفال",
+      "العناية الوقائية والعلاجية",
+      "تواصل مناسب لعمر الطفل",
+    ],
+    mark: "pediatric",
+    accent: "#E8F5FC",
   },
 ];
 
@@ -341,6 +431,61 @@ function ToothIllustration({
               strokeWidth="2"
             />
           ))}
+        </g>
+      )}
+
+      {mark === "bone" && (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M32 119 Q53 108 79 119 T132 119" stroke="#A9C7DD" strokeWidth="9" opacity="0.8" />
+          <path d="M34 135 Q53 124 79 135 T130 135" stroke="#6BBAEF" strokeWidth="2.5" strokeDasharray="5 5" />
+          <path d="M55 132 L55 156 M80 136 L80 164 M106 132 L106 156" stroke="#5F91B5" strokeWidth="3" />
+          <circle cx="80" cy="146" r="22" stroke="#6BBAEF" strokeWidth="2" strokeDasharray="3 5" />
+        </g>
+      )}
+
+      {mark === "hollywood" && (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M43 38 Q80 24 117 38 L109 99 Q80 121 51 99Z" fill="#F9FDFF" stroke="#80B7DE" strokeWidth="2.5" />
+          <path d="M50 48 Q80 36 109 48" stroke="#C2E2F5" strokeWidth="2.5" />
+          <path d="M57 79 Q80 98 103 79" stroke="#6BBAEF" strokeWidth="3" />
+          <path d="M125 40 V58 M116 49 H134 M32 98 V112 M25 105 H39" stroke="#4BA1DD" strokeWidth="2.5" />
+        </g>
+      )}
+
+      {mark === "rehabilitation" && (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="40" y="44" width="80" height="92" rx="16" stroke="#76A9CE" strokeWidth="2.5" strokeDasharray="5 5" />
+          <path d="M54 65 H106 M54 85 H106 M54 105 H106" stroke="#B9D8EB" strokeWidth="3" />
+          <path d="M69 65 L77 73 L94 53" stroke="#2C89C4" strokeWidth="4" />
+          <path d="M69 105 L77 113 L94 93" stroke="#2C89C4" strokeWidth="4" />
+        </g>
+      )}
+
+      {mark === "digital" && (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="35" y="40" width="90" height="92" rx="8" stroke="#7EB5D8" strokeWidth="2.5" strokeDasharray="6 5" />
+          <path d="M80 43 V129 M38 85 H122" stroke="#B6DDF2" strokeWidth="1.7" strokeDasharray="4 4" />
+          <path d="M52 96 Q80 115 108 96" stroke="#3B96D1" strokeWidth="3.5" />
+          <circle cx="52" cy="96" r="4" fill="#5AB4EA" stroke="white" strokeWidth="1.5" />
+          <circle cx="80" cy="110" r="4" fill="#5AB4EA" stroke="white" strokeWidth="1.5" />
+          <circle cx="108" cy="96" r="4" fill="#5AB4EA" stroke="white" strokeWidth="1.5" />
+        </g>
+      )}
+
+      {mark === "prosthetics" && (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M37 43 Q80 19 123 43 L116 108 Q80 134 44 108Z" fill="#FFFFFF" fillOpacity="0.84" stroke="#78A8CC" strokeWidth="3" />
+          <path d="M45 56 Q80 37 115 56 M80 45 V116" stroke="#D0E6F4" strokeWidth="2.5" />
+          <path d="M48 116 Q80 134 112 116" stroke="#619CC5" strokeWidth="2.5" strokeDasharray="5 4" />
+          <circle cx="80" cy="25" r="5" fill="#69B5E7" stroke="#D7ECFA" strokeWidth="2" />
+        </g>
+      )}
+
+      {mark === "pediatric" && (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M46 50 Q42 34 57 32 Q71 30 80 37 Q89 30 103 32 Q118 34 114 50 Q110 69 101 86 Q97 95 92 89 L84 69 Q80 62 76 69 L68 89 Q63 95 59 86 Q50 69 46 50Z" fill="#FFFFFF" stroke="#83B8D8" strokeWidth="2.5" />
+          <path d="M80 105 V125 M70 115 H90" stroke="#3E98D0" strokeWidth="3" />
+          <path d="M113 103 L116 111 L124 114 L116 117 L113 125 L110 117 L102 114 L110 111Z" fill="#6BBAEF" stroke="none" />
         </g>
       )}
 

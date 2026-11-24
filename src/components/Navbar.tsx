@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -7,6 +6,7 @@ import {
   Images,
   Stethoscope,
   HeartHandshake,
+  Award,
   MessagesSquare,
   Phone,
   Menu,
@@ -18,6 +18,7 @@ const navItems = [
   { name: "نتائج المرضى", icon: Images, href: "#results" },
   { name: "خدماتنا", icon: Stethoscope, href: "#services" },
   { name: "لماذا نحن", icon: HeartHandshake, href: "#why-us" },
+  { name: "الشهادات", icon: Award, href: "#certificates" },
   { name: "آراء المرضى", icon: MessagesSquare, href: "#testimonials" },
   { name: "تواصل معنا", icon: Phone, href: "#contact" },
 ];
@@ -34,7 +35,7 @@ export default function Navbar() {
   const [center, setCenter] = useState({ x: 0, y: 0 });
   const [layout, setLayout] = useState<MenuLayout>({
     mobile: false,
-    radius: 240,
+    radius: 270,
     size: 100,
     horizontalOffset: 100,
   });
@@ -63,20 +64,20 @@ export default function Navbar() {
         setLayout({
           mobile: true,
           radius: 0,
-          size: 76,
+          size: 72,
           horizontalOffset: Math.min(102, (width - 100) / 2.2),
         });
       } else if (width < 1024) {
         setLayout({
           mobile: false,
-          radius: 205,
+          radius: 235,
           size: 88,
           horizontalOffset: 0,
         });
       } else {
         setLayout({
           mobile: false,
-          radius: 240,
+          radius: 270,
           size: 100,
           horizontalOffset: 0,
         });
@@ -146,34 +147,16 @@ export default function Navbar() {
 
   const getPosition = (index: number) => {
     if (layout.mobile) {
-      const positions = [
-        {
-          x: layout.horizontalOffset,
-          y: 165,
-        },
-        {
-          x: 0,
-          y: 165,
-        },
-        {
-          x: -layout.horizontalOffset,
-          y: 165,
-        },
-        {
-          x: layout.horizontalOffset,
-          y: 255,
-        },
-        {
-          x: 0,
-          y: 255,
-        },
-        {
-          x: -layout.horizontalOffset,
-          y: 255,
-        },
-      ];
+      const width = typeof window === "undefined" ? 390 : window.innerWidth;
+      const distance = Math.min(82, (width - 32) / 4);
+      const firstRow = index < 3;
+      const column = firstRow ? index : index - 3;
+      const columns = firstRow ? 3 : 4;
 
-      return positions[index];
+      return {
+        x: ((columns - 1) / 2 - column) * distance,
+        y: firstRow ? 158 : 249,
+      };
     }
 
     const angle =
