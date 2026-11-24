@@ -7,6 +7,7 @@ import Testimonials from "@/components/Testimonials";
 import Booking from "@/components/Booking";
 import Results from "@/components/Results";
 import WhyChooseUs from "@/components/WhyChooseUs";
+import Certificates from "@/components/Certificates";
 import Footer from "@/components/Footer";
 
 export default function App() {
@@ -20,17 +21,15 @@ export default function App() {
       <Navbar />
 
       <main>
-        <section id="home">
-          <Hero />
-        </section>
+        <Hero />
 
         <Results />
 
         <Services />
 
-        <section id="why-us">
-          <WhyChooseUs />
-        </section>
+        <WhyChooseUs />
+
+        <Certificates />
 
         <Testimonials />
 
