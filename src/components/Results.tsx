@@ -1,174 +1,233 @@
-"use client";
-
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode, type RefObject } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Images, X } from "lucide-react";
+import {
+  AnimatePresence,
+  LayoutGroup,
+  motion,
+  useReducedMotion,
+  type Transition,
+} from "framer-motion";
+import { ArrowUpLeft, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 
 type PatientResult = {
-  id: number;
+  id: string;
+  number: string;
+  image: string;
+  alt: string;
   title: string;
+  subtitle: string;
   description: string;
-  beforeImage?: string;
-  afterImage?: string;
 };
 
 const results: PatientResult[] = [
   {
-    id: 1,
-    title: "علاج تسوس الأسنان",
-    description: "مساحة مخصصة لعرض صور حالة علاجية حقيقية قبل العلاج وبعده، بعد الحصول على الموافقة اللازمة.",
-    beforeImage: "",
-    afterImage: "",
+    id: "patient-result-01",
+    number: "01",
+    image: "/PatientResult/FirstImg.png",
+    alt: "صور مقارنة قبل وبعد للحالة الأولى",
+    title: "ابتسامة بثقة متجددة",
+    subtitle: "فرق يظهر في تفاصيل الابتسامة",
+    description:
+      "تُظهر الصور التغيّر في مظهر الابتسامة قبل العلاج وبعده، مع الاهتمام بتناسق الأسنان ومظهرها العام.",
   },
   {
-    id: 2,
-    title: "فينيرز وتلبيس زركون",
-    description: "سيتم هنا عرض صور حالة معتمدة توضح تفاصيل العلاج ونتيجته.",
-    beforeImage: "",
-    afterImage: "",
+    id: "patient-result-02",
+    number: "02",
+    image: "/PatientResult/SecondImg.png",
+    alt: "صور مقارنة قبل وبعد للحالة الثانية",
+    title: "جمال في كل تفصيلة",
+    subtitle: "عناية بالمظهر والتناسق الطبيعي",
+    description:
+      "مقارنة بصرية توضح اختلاف مظهر الأسنان والابتسامة بين الصورتين، وتبرز أهمية العناية بالتفاصيل الجمالية.",
   },
   {
-    id: 3,
-    title: "تقويم الأسنان",
-    description: "هذه البطاقة مخصصة لصور حالة تقويم حقيقية بعد اعتمادها من العيادة.",
-    beforeImage: "",
-    afterImage: "",
+    id: "patient-result-03",
+    number: "03",
+    image: "/PatientResult/ThirdImg.png",
+    alt: "صور مقارنة قبل وبعد للحالة الثالثة",
+    title: "لمسة جمالية متناسقة",
+    subtitle: "تفاصيل تصنع فرقًا في الابتسامة",
+    description:
+      "تُبرز الصور التغيّر في شكل الابتسامة وتناسق الأسنان. تختلف خيارات العلاج والنتائج بحسب تقييم كل حالة.",
+  },
+  {
+    id: "patient-result-04",
+    number: "04",
+    image: "/PatientResult/ForthImg.png",
+    alt: "صور متعددة لنتائج الحالة الرابعة",
+    title: "لكل ابتسامة حكاية",
+    subtitle: "رحلة نحو ابتسامة أكثر تناسقًا",
+    description:
+      "مجموعة صور توضح جوانب مختلفة من مظهر الابتسامة، مع إبراز التفاصيل التي تسهم في جمالها وتناسقها.",
   },
 ];
 
-function ResultImage({
-  src,
-  label,
-  title,
-}: {
-  src?: string;
-  label: string;
-  title: string;
-}) {
-  return (
-    <div className="relative flex h-full min-h-0 w-full min-w-0 items-center justify-center overflow-hidden bg-gradient-to-br from-[#EAF4FC] to-[#DCECF8]">
-      {src ? (
-        <img
-          src={src}
-          alt={`${label} - ${title}`}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-      ) : (
-        <div className="flex flex-col items-center gap-3 px-3 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#C8E0F1] bg-white/60 text-[#7FA9C9] sm:h-14 sm:w-14">
-            <Images size={25} strokeWidth={1.5} />
-          </div>
-          <p className="text-xs font-semibold leading-6 text-[#6887A4] sm:text-sm">بانتظار صورة معتمدة</p>
-        </div>
-      )}
-      <p className="absolute right-2 top-3 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-xs font-bold text-[#032654] backdrop-blur-md sm:right-3">
-        {label}
-      </p>
-    </div>
-  );
+const cardSpring: Transition = {
+  type: "spring",
+  stiffness: 230,
+  damping: 30,
+  mass: 0.9,
+};
+
+type DialogPortalProps = {
+  children: ReactNode;
+};
+
+function DialogPortal({ children }: DialogPortalProps) {
+  if (typeof document === "undefined") return null;
+  return createPortal(children, document.body);
 }
 
-function ResultCard({
-  result,
-  index,
-  onOpen,
-  reducedMotion,
-}: {
-  result: PatientResult;
-  index: number;
-  onOpen: () => void;
-  reducedMotion: boolean;
-}) {
-  const hasImages = Boolean(result.beforeImage && result.afterImage);
-
-  return (
-    <motion.article
-      data-result-card
-      initial={false}
-      whileHover={reducedMotion ? undefined : { y: -6 }}
-      transition={{ type: "spring", stiffness: 250, damping: 24 }}
-      className="w-[min(84vw,390px)] shrink-0 snap-start sm:w-[390px]"
-    >
-      <button
-        type="button"
-        aria-label={`عرض تفاصيل ${result.title}`}
-        onClick={onOpen}
-        className="group block w-full cursor-pointer text-right outline-none focus-visible:rounded-[30px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#6BBAEF]"
-      >
-        <div className="relative">
-          <div className="relative aspect-[5/4] overflow-hidden rounded-[27px] border border-[#D6E5F1] bg-white shadow-[0_12px_35px_rgba(3,38,84,0.06)] transition-shadow duration-300 group-hover:shadow-[0_22px_50px_rgba(3,38,84,0.14)]">
-            <div className="grid h-full grid-cols-2 gap-[2px] bg-[#C8DBEA]">
-              <ResultImage src={result.beforeImage} label="قبل العلاج" title={result.title} />
-              <ResultImage src={result.afterImage} label="بعد العلاج" title={result.title} />
-            </div>
-            <p className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-[#032654]">
-              {hasImages ? "عرض الحالة" : "قيد الإضافة"}
-            </p>
-          </div>
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 right-0 z-10"
-            style={{ width: 76, height: 76, borderTopLeftRadius: 44, background: "#F8FAFC" }}
-          />
-          {[
-            { bottom: 76, right: 0 },
-            { bottom: 0, right: 76 },
-          ].map((position, positionIndex) => (
-            <div
-              key={positionIndex}
-              aria-hidden="true"
-              className="pointer-events-none absolute z-10"
-              style={{
-                ...position,
-                width: 25,
-                height: 25,
-                background: "radial-gradient(circle at top left, transparent 24.5px, #F8FAFC 25px)",
-              }}
-            />
-          ))}
-          <div className="absolute bottom-0 right-0 z-20 flex h-16 w-16 items-center justify-center rounded-full bg-[#032654] text-white transition-colors duration-300 group-hover:bg-[#6BBAEF] group-hover:text-[#032654]">
-            <ArrowUpRight className="h-6 w-6 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
-          </div>
-        </div>
-      </button>
-      <div className="mt-5 px-1 text-right">
-        <p className="text-xs font-bold text-[#287DB7]">{String(index + 1).padStart(2, "0")} / نتائج المرضى</p>
-        <h3 className="mt-2 text-[22px] font-bold leading-[1.5] text-[#032654]">{result.title}</h3>
-        <p className="mt-2 text-sm font-medium leading-7 text-[#526176]">{result.description}</p>
-      </div>
-    </motion.article>
-  );
-}
+type ResultDialogProps = {
+  selected: PatientResult | null;
+  onClose: () => void;
+  dialogRef: RefObject<HTMLDivElement | null>;
+  closeButtonRef: RefObject<HTMLButtonElement | null>;
+  transition: Transition;
+  reduceMotion: boolean;
+};
 
 function ResultDialog({
   selected,
   onClose,
-  reducedMotion,
-}: {
-  selected: PatientResult;
-  onClose: () => void;
-  reducedMotion: boolean;
-}) {
+  dialogRef,
+  closeButtonRef,
+  transition,
+  reduceMotion,
+}: ResultDialogProps) {
+  return (
+    <DialogPortal>
+      <AnimatePresence initial={false}>
+        {selected && (
+          <div
+            key={selected.id}
+            className="fixed inset-0 z-[100] flex items-center justify-center px-3 py-4 sm:px-6"
+          >
+            <motion.div
+              aria-hidden="true"
+              className="absolute inset-0 bg-[#032654]/75 backdrop-blur-[8px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.28 }}
+              onClick={onClose}
+            />
+
+            <motion.div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={`result-dialog-title-${selected.id}`}
+              aria-describedby={`result-dialog-description-${selected.id}`}
+              layoutId={`result-card-${selected.id}`}
+              transition={transition}
+              dir="rtl"
+              className="relative z-10 flex max-h-[92dvh] w-full max-w-[900px] flex-col overflow-y-auto rounded-[26px] border border-[#DCE7F2] bg-white shadow-[0_30px_100px_rgba(3,38,84,0.3)] sm:rounded-[32px]"
+            >
+              <motion.div
+                layoutId={`result-image-${selected.id}`}
+                className="relative flex h-[270px] w-full shrink-0 items-center justify-center overflow-hidden bg-[#EAF5FD] sm:h-[440px]"
+              >
+                <img
+                  src={selected.image}
+                  alt={selected.alt}
+                  className="h-full w-full object-contain"
+                />
+              </motion.div>
+
+              <button
+                ref={closeButtonRef}
+                type="button"
+                onClick={onClose}
+                aria-label="إغلاق تفاصيل الحالة"
+                className="absolute left-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-[#DCE7F2] bg-white/95 text-[#032654] shadow-md transition-all duration-300 hover:rotate-90 hover:bg-[#E6F3FD] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0C76AF] sm:left-6 sm:top-6"
+              >
+                <X size={21} aria-hidden="true" />
+              </button>
+
+              <div className="px-6 pb-8 pt-7 sm:px-10 sm:pb-10 sm:pt-9">
+                <motion.h3
+                  id={`result-dialog-title-${selected.id}`}
+                  layoutId={`result-title-${selected.id}`}
+                  className="text-[27px] font-bold leading-[1.5] text-[#032654] sm:text-[37px]"
+                >
+                  {selected.title}
+                </motion.h3>
+
+                <motion.div
+                  initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.35,
+                    delay: reduceMotion ? 0 : 0.1,
+                  }}
+                >
+                  <div aria-hidden="true" className="my-5 h-1 w-14 rounded-full bg-[#6BBAEF]" />
+                  <p
+                    id={`result-dialog-description-${selected.id}`}
+                    className="max-w-2xl text-[16px] leading-[2.1] text-[#475569] sm:text-[18px]"
+                  >
+                    {selected.description}
+                  </p>
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#032654] px-6 py-3 text-[15px] font-semibold text-white transition-colors duration-300 hover:bg-[#0C76AF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0C76AF]"
+                    >
+                      العودة للنتائج
+                      <ArrowUpLeft size={17} aria-hidden="true" />
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </DialogPortal>
+  );
+}
+
+export default function Results() {
+  const [selected, setSelected] = useState<PatientResult | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const reduceMotion = Boolean(useReducedMotion());
+  const transition: Transition = reduceMotion ? { duration: 0 } : cardSpring;
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
+    if (!selected) return;
 
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      if (event.key !== "Tab" || !panelRef.current) return;
-      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusFrame = requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelected(null);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusableElements = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
       );
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+
+      if (!focusableElements?.length) return;
+
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
@@ -176,212 +235,247 @@ function ResultDialog({
         event.preventDefault();
         first.focus();
       }
-    };
+    }
 
-    document.addEventListener("keydown", handleKey);
+    document.addEventListener("keydown", handleKeyDown);
+
     return () => {
+      cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", handleKey);
-      previousFocus?.focus();
+      document.removeEventListener("keydown", handleKeyDown);
+      requestAnimationFrame(() => triggerRef.current?.focus());
     };
-  }, [onClose]);
+  }, [selected]);
 
-  return (
-    <motion.div
-      initial={{ opacity: reducedMotion ? 1 : 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: reducedMotion ? 0 : 0.2 }}
-      onPointerDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-      className="fixed inset-0 z-[999] flex items-center justify-center overflow-y-auto bg-[#03182E]/80 p-4 backdrop-blur-sm"
-    >
-      <motion.div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="result-dialog-title"
-        initial={reducedMotion ? false : { opacity: 0, y: 18, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
-        transition={{ duration: reducedMotion ? 0 : 0.25 }}
-        className="my-auto w-full max-w-4xl overflow-hidden rounded-[26px] border border-[#DCE7F2] bg-white text-[#032654] shadow-[0_35px_100px_rgba(0,0,0,0.25)]"
-      >
-        <div className="flex items-start justify-between gap-4 border-b border-[#E2E8F0] px-5 py-5 sm:px-8">
-          <div>
-            <p className="text-sm font-bold text-[#287DB7]">تفاصيل الحالة</p>
-            <h3 id="result-dialog-title" className="mt-2 text-xl font-bold leading-8 sm:text-3xl">{selected.title}</h3>
-          </div>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            aria-label="إغلاق تفاصيل الحالة"
-            onClick={onClose}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DCE7F2] bg-[#F8FAFC] focus-visible:outline-2 focus-visible:outline-[#6BBAEF]"
-          >
-            <X size={21} />
-          </button>
-        </div>
-        <div className="p-5 sm:p-8">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="aspect-[4/5] overflow-hidden rounded-[20px]">
-              <ResultImage src={selected.beforeImage} label="قبل العلاج" title={selected.title} />
-            </div>
-            <div className="aspect-[4/5] overflow-hidden rounded-[20px]">
-              <ResultImage src={selected.afterImage} label="بعد العلاج" title={selected.title} />
-            </div>
-          </div>
-          <p className="mt-6 text-base font-medium leading-8 text-[#475569]">
-            {selected.beforeImage && selected.afterImage
-              ? selected.description
-              : "لم تتم إضافة الصور المعتمدة لهذه الحالة بعد. ستُعرض صور قبل العلاج وبعده عند توفرها وبعد موافقة المريض على نشرها."}
-          </p>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
+  function openResult(result: PatientResult, event: MouseEvent<HTMLButtonElement>) {
+    triggerRef.current = event.currentTarget;
+    setSelected(result);
+  }
 
-export default function Results() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [selected, setSelected] = useState<PatientResult | null>(null);
-  const railRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = Boolean(useReducedMotion());
-  const closeDialog = useCallback(() => setSelected(null), []);
+  function handleCarouselScroll() {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
 
-  const navigate = (direction: number) => {
-    const next = (activeIndex + direction + results.length) % results.length;
-    setActiveIndex(next);
-    const card = railRef.current?.querySelectorAll<HTMLElement>("[data-result-card]")[next];
-    card?.scrollIntoView({
-      behavior: reducedMotion ? "instant" : "smooth",
-      block: "nearest",
-      inline: "start",
-    });
-  };
+    const cards = Array.from(carousel.children);
+    const containerRect = carousel.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    let closestIndex = 0;
+    let closestDistance = Infinity;
 
-  const handleScroll = () => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const rightEdge = rail.getBoundingClientRect().right;
-    const cards = rail.querySelectorAll<HTMLElement>("[data-result-card]");
-    let closest = 0;
-    let distance = Number.POSITIVE_INFINITY;
     cards.forEach((card, index) => {
-      const difference = Math.abs(card.getBoundingClientRect().right - rightEdge);
-      if (difference < distance) {
-        closest = index;
-        distance = difference;
+      const rect = card.getBoundingClientRect();
+      const cardCenter = rect.left + rect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
       }
     });
-    setActiveIndex((current) => current === closest ? current : closest);
-  };
+
+    setActiveIndex((current) => (current === closestIndex ? current : closestIndex));
+  }
+
+  function scrollToResult(index: number) {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const targetIndex = Math.max(0, Math.min(index, results.length - 1));
+    const target = carousel.children.item(targetIndex);
+    if (!(target instanceof HTMLElement)) return;
+
+    target.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+    setActiveIndex(targetIndex);
+  }
 
   return (
-    <>
-      <section
-        id="results"
-        dir="rtl"
-        className="relative scroll-mt-28 overflow-hidden bg-[#F8FAFC] py-24 text-[#032654] md:py-28"
-        style={{ fontFamily: '"IBM Plex Sans Arabic", "Tajawal", sans-serif' }}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
-          <header className="flex flex-col justify-between gap-6 text-right md:flex-row md:items-end">
-            <div className="max-w-2xl">
-              <p className="text-sm font-bold text-[#287DB7]">من داخل العيادة</p>
-              <h2 className="mt-4 text-[38px] font-bold leading-[1.4] sm:text-5xl lg:text-[58px]">نتائج المرضى</h2>
-              <p className="mt-4 text-base font-medium leading-9 text-[#475569] md:text-lg">
-                تصفّح الحالات بالسحب يمينًا ويسارًا. سنعرض صور قبل العلاج وبعده بعد اعتمادها والحصول على موافقة أصحابها.
-              </p>
-            </div>
-            <div className="hidden items-center gap-3 self-start lg:flex lg:self-auto">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                aria-label="الحالة السابقة"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CBD5E1] bg-white text-[#032654] transition-colors hover:bg-[#032654] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#6BBAEF]"
-              >
-                <ArrowRight size={20} />
-              </button>
-              <p className="min-w-14 text-center text-sm font-bold tabular-nums text-[#032654]">
-                {String(activeIndex + 1).padStart(2, "0")} / {String(results.length).padStart(2, "0")}
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate(1)}
-                aria-label="الحالة التالية"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CBD5E1] bg-white text-[#032654] transition-colors hover:bg-[#032654] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#6BBAEF]"
-              >
-                <ArrowLeft size={20} />
-              </button>
-            </div>
-          </header>
+    <section
+      id="results"
+      dir="rtl"
+      aria-labelledby="patient-results-heading"
+      className="scroll-mt-28 overflow-hidden bg-[#F8FAFC] px-4 py-20 sm:px-8 md:py-28 lg:px-10"
+      style={{ fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}
+    >
+      <div className="mx-auto max-w-7xl">
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: reduceMotion ? 0 : 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-11 flex flex-col items-center text-center md:mb-14"
+        >
+          <div className="mb-4 flex items-center justify-center gap-3">
+            <div aria-hidden="true" className="h-px w-10 bg-[#6BBAEF] sm:w-14" />
+            <p className="text-[14px] font-semibold tracking-wide text-[#0C76AF] sm:text-[15px]">
+              قصص ابتسامات
+            </p>
+            <div aria-hidden="true" className="h-px w-10 bg-[#6BBAEF] sm:w-14" />
+          </div>
 
-          <div className="relative mt-12 md:mt-16">
-            <div
-              ref={railRef}
-              dir="rtl"
-              role="region"
-              aria-label="معرض نتائج المرضى قابل للتمرير أفقيًا"
-              tabIndex={0}
-              onScroll={handleScroll}
-              className="flex snap-x snap-mandatory gap-5 overflow-x-auto overflow-y-hidden pb-8 pl-1 pr-1 focus-visible:outline-2 focus-visible:outline-[#6BBAEF] [scrollbar-width:thin] [scrollbar-color:#B7D5EC_transparent] sm:gap-7"
-            >
+          <h2
+            id="patient-results-heading"
+            className="text-[36px] font-bold leading-[1.5] text-[#032654] sm:text-[47px] lg:text-[56px]"
+          >
+            نتائج المرضى
+          </h2>
+
+          <p className="mt-3 max-w-2xl text-[15px] leading-[2] text-[#475569] sm:text-[17px]">
+            لمحات من حالات عولجت في العيادة، تُظهر تفاصيل مختلفة من رحلة العناية بالأسنان والابتسامة.
+          </p>
+        </motion.div>
+
+        <LayoutGroup id="patient-results-layout">
+          <div
+            ref={carouselRef}
+            dir="rtl"
+            onScroll={handleCarouselScroll}
+            aria-label="معرض نتائج المرضى"
+            className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-4 [scrollbar-width:none] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden"
+          >
+            {results.map((result, index) => (
+              <motion.div
+                key={result.id}
+                className="w-[87%] max-w-[420px] shrink-0 snap-center sm:w-auto sm:max-w-none sm:shrink"
+                initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{
+                  duration: reduceMotion ? 0 : 0.65,
+                  delay: reduceMotion ? 0 : index * 0.09,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <motion.button
+                  type="button"
+                  layoutId={`result-card-${result.id}`}
+                  onClick={(event) => openResult(result, event)}
+                  aria-haspopup="dialog"
+                  aria-label={`عرض تفاصيل ${result.title}`}
+                  className="group relative flex h-[390px] w-full flex-col overflow-hidden rounded-[26px] border border-[#DCE7F2] bg-white text-right shadow-[0_12px_36px_rgba(3,38,84,0.07)] outline-offset-4 transition-shadow duration-300 hover:shadow-[0_22px_55px_rgba(3,38,84,0.14)] focus-visible:outline-2 focus-visible:outline-[#0C76AF]"
+                  whileHover={reduceMotion ? undefined : { y: -6 }}
+                  transition={transition}
+                >
+                  <div className="relative h-[262px] w-full shrink-0 overflow-hidden bg-[#EAF5FD]">
+                    <motion.div
+                      layoutId={`result-image-${result.id}`}
+                      className="relative h-full w-full"
+                    >
+                      <img
+                        src={result.image}
+                        alt={result.alt}
+                        loading="lazy"
+                        className="h-full w-full object-contain p-1.5 transition-transform duration-700 group-hover:scale-[1.04]"
+                      />
+                    </motion.div>
+
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#032654]/10 via-transparent to-transparent"
+                    />
+
+                    <div
+                      aria-hidden="true"
+                      className="absolute right-4 top-4 rounded-full border border-white/40 bg-[#032654]/85 px-3 py-1.5 text-[12px] font-semibold text-white backdrop-blur-md"
+                    >
+                      {result.number}
+                    </div>
+                  </div>
+
+                  <div className="flex min-h-0 flex-1 items-center justify-between gap-3 px-5 py-5">
+                    <div className="min-w-0 flex-1">
+                      <motion.h3
+                        layoutId={`result-title-${result.id}`}
+                        className="text-[19px] font-bold leading-[1.6] text-[#032654] xl:text-[20px]"
+                      >
+                        {result.title}
+                      </motion.h3>
+                      <p className="mt-1 text-[12px] leading-6 text-[#64748B] xl:text-[13px]">
+                        {result.subtitle}
+                      </p>
+                    </div>
+
+                    <div
+                      aria-hidden="true"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#032654] text-white transition-all duration-300 group-hover:rotate-90 group-hover:bg-[#0C76AF]"
+                    >
+                      <Plus size={21} aria-hidden="true" />
+                    </div>
+                  </div>
+                </motion.button>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-5 flex flex-col items-center gap-2 sm:hidden">
+            <p className="flex items-center gap-2 text-[13px] text-[#475569]">
+              اسحب لاستكشاف المزيد من النتائج
+              <ChevronLeft size={16} aria-hidden="true" />
+            </p>
+
+            <div className="flex items-center justify-center gap-1">
               {results.map((result, index) => (
-                <ResultCard
+                <button
                   key={result.id}
-                  result={result}
-                  index={index}
-                  reducedMotion={reducedMotion}
-                  onOpen={() => setSelected(result)}
-                />
+                  type="button"
+                  onClick={() => scrollToResult(index)}
+                  aria-label={`الانتقال إلى ${result.title}`}
+                  aria-current={activeIndex === index ? "true" : undefined}
+                  className="flex h-10 items-center justify-center px-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0C76AF]"
+                >
+                  <motion.div
+                    animate={{
+                      width: activeIndex === index ? 25 : 8,
+                      backgroundColor: activeIndex === index ? "#032654" : "#BFDCEF",
+                    }}
+                    transition={{ duration: reduceMotion ? 0 : 0.25 }}
+                    className="h-[8px] rounded-full"
+                  />
+                </button>
               ))}
             </div>
 
-            <div className="pointer-events-none absolute inset-x-1 top-[clamp(100px,33vw,155px)] z-30 flex items-center justify-between lg:hidden">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                aria-label="النتيجة السابقة"
-                className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#C7DEEF] bg-white/95 text-[#032654] shadow-[0_8px_24px_rgba(3,38,84,0.16)] backdrop-blur-sm transition-colors hover:border-[#6BBAEF] hover:bg-[#032654] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6BBAEF]"
-              >
-                <ArrowRight size={23} strokeWidth={2.25} />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(1)}
-                aria-label="النتيجة التالية"
-                className="pointer-events-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#C7DEEF] bg-white/95 text-[#032654] shadow-[0_8px_24px_rgba(3,38,84,0.16)] backdrop-blur-sm transition-colors hover:border-[#6BBAEF] hover:bg-[#032654] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6BBAEF]"
-              >
-                <ArrowLeft size={23} strokeWidth={2.25} />
-              </button>
-            </div>
+            <p dir="ltr" className="text-[13px] tracking-wider text-[#64748B]" aria-live="polite">
+              {String(activeIndex + 1).padStart(2, "0")}
+              {" / "}
+              {String(results.length).padStart(2, "0")}
+            </p>
           </div>
 
-          <p className="mt-1 text-center text-sm font-bold tabular-nums text-[#032654] lg:hidden">
-            {String(activeIndex + 1).padStart(2, "0")} / {String(results.length).padStart(2, "0")}
-          </p>
+          <div className="mt-2 flex items-center justify-center gap-4 sm:hidden">
+            <button
+              type="button"
+              onClick={() => scrollToResult(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="النتيجة السابقة"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#BFDCEF] bg-white text-[#032654] transition-colors hover:bg-[#E6F3FD] disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-[#0C76AF]"
+            >
+              <ChevronRight size={20} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollToResult(activeIndex + 1)}
+              disabled={activeIndex === results.length - 1}
+              aria-label="النتيجة التالية"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#032654] text-white transition-colors hover:bg-[#0C76AF] disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-[#0C76AF]"
+            >
+              <ChevronLeft size={20} aria-hidden="true" />
+            </button>
+          </div>
 
-          <p className="mt-2 text-right text-sm font-medium leading-8 text-[#64748B]">
-            اسحب البطاقات أفقيًا أو استخدم الأسهم للتنقل. الصور الحقيقية تُنشر فقط بعد موافقة المريض.
-          </p>
-        </div>
-      </section>
-
-      {typeof document !== "undefined" && createPortal(
-        <AnimatePresence>
-          {selected && (
-            <ResultDialog
-              key={selected.id}
-              selected={selected}
-              onClose={closeDialog}
-              reducedMotion={reducedMotion}
-            />
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
-    </>
+          <ResultDialog
+            selected={selected}
+            onClose={() => setSelected(null)}
+            dialogRef={dialogRef}
+            closeButtonRef={closeButtonRef}
+            transition={transition}
+            reduceMotion={reduceMotion}
+          />
+        </LayoutGroup>
+      </div>
+    </section>
   );
 }
