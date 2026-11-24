@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://drarfat.vercel.app/sitemap.xml
