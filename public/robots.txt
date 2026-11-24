@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://drarfat.vercel.app/sitemap.xml
+Sitemap: https://dental-clininc-eight.vercel.app/sitemap.xml
