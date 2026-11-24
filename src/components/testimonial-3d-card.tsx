@@ -1,5 +1,5 @@
-
 import { useRef } from "react";
+import type { PointerEvent, ReactNode } from "react";
 import {
   motion,
   useMotionValue,
@@ -7,15 +7,11 @@ import {
   useTransform,
   useReducedMotion,
 } from "framer-motion";
-import { Quote, MessageCircle } from "lucide-react";
-import type { PointerEvent, ReactNode } from "react";
+import { Quote, MessageCircle, Star } from "lucide-react";
 
 export interface Testimonial {
   id: number;
-  name: string;
-  treatment: string;
   quote: string;
-  date?: string;
 }
 
 interface Props {
@@ -23,6 +19,7 @@ interface Props {
   index: number;
   total: number;
   onSwipe?: (direction: number) => void;
+  preview?: boolean;
 }
 
 function Depth({
@@ -35,10 +32,7 @@ function Depth({
   className?: string;
 }) {
   return (
-    <div
-      className={className}
-      style={{ transform: `translateZ(${z}px)` }}
-    >
+    <div className={className} style={{ transform: `translateZ(${z}px)` }}>
       {children}
     </div>
   );
@@ -49,10 +43,10 @@ export default function Testimonial3DCard({
   index,
   total,
   onSwipe,
+  preview = false,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
-
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
 
@@ -68,25 +62,19 @@ export default function Testimonial3DCard({
     mass: 0.65,
   });
 
-  const rotateX = useTransform(springY, [-1, 1], [8, -8]);
-  const rotateY = useTransform(springX, [-1, 1], [-10, 10]);
-
+  const rotateX = useTransform(springY, [-1, 1], [7, -7]);
+  const rotateY = useTransform(springX, [-1, 1], [-9, 9]);
   const glowX = useTransform(springX, [-1, 1], ["20%", "80%"]);
   const glowY = useTransform(springY, [-1, 1], ["20%", "80%"]);
 
   const onMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (reduced || event.pointerType !== "mouse") return;
+    if (reduced || preview || event.pointerType !== "mouse") return;
 
     const rect = ref.current?.getBoundingClientRect();
     if (!rect) return;
 
-    mx.set(
-      ((event.clientX - rect.left) / rect.width - 0.5) * 2
-    );
-
-    my.set(
-      ((event.clientY - rect.top) / rect.height - 0.5) * 2
-    );
+    mx.set(((event.clientX - rect.left) / rect.width - 0.5) * 2);
+    my.set(((event.clientY - rect.top) / rect.height - 0.5) * 2);
   };
 
   const reset = () => {
@@ -99,59 +87,71 @@ export default function Testimonial3DCard({
       ref={ref}
       onPointerMove={onMove}
       onPointerLeave={reset}
-      className="relative mx-auto w-full max-w-[740px]"
+      aria-hidden={preview ? true : undefined}
+      className="relative h-full w-full"
       style={{ perspective: "1400px" }}
     >
       <motion.div
-        drag={onSwipe && !reduced ? "x" : false}
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.14}
+        drag={!preview && onSwipe ? "x" : false}
+        dragConstraints={{ left: -450, right: 450 }}
+        dragElastic={0.08}
+        dragMomentum={false}
+        dragSnapToOrigin
+        dragDirectionLock
         onDragEnd={(_, info) => {
-          if (Math.abs(info.offset.x) > 70) {
-            onSwipe?.(info.offset.x > 0 ? -1 : 1);
+          if (!onSwipe || preview) return;
+          if (
+            Math.abs(info.offset.x) < 60 &&
+            Math.abs(info.velocity.x) < 500
+          ) {
+            return;
           }
+          const travel =
+            Math.abs(info.offset.x) >= 60
+              ? info.offset.x
+              : info.velocity.x;
+          onSwipe(travel < 0 ? 1 : -1);
+          reset();
         }}
+        whileDrag={reduced ? undefined : { scale: 1.015 }}
         style={{
-          rotateX: reduced ? 0 : rotateX,
-          rotateY: reduced ? 0 : rotateY,
+          rotateX: reduced || preview ? 0 : rotateX,
+          rotateY: reduced || preview ? 0 : rotateY,
           transformStyle: "preserve-3d",
           touchAction: "pan-y",
         }}
-        className="relative min-h-[440px] cursor-grab select-none overflow-visible rounded-[32px] bg-[#032654] text-white shadow-[0_35px_90px_-35px_rgba(3,38,84,0.5)] active:cursor-grabbing sm:min-h-[410px] md:rounded-[42px]"
+        className={`relative flex h-full w-full select-none flex-col overflow-visible rounded-[20px] text-white shadow-[0_24px_58px_-28px_rgba(3,38,84,0.55)] sm:rounded-[36px] sm:shadow-[0_30px_90px_-35px_rgba(3,38,84,0.55)] md:rounded-[42px] ${
+          preview
+            ? "cursor-default bg-[#0B4179]"
+            : "cursor-grab bg-[#032654] active:cursor-grabbing"
+        }`}
       >
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] border border-[#6BBAEF]/25">
           <div className="absolute -right-28 -top-36 h-96 w-96 rounded-full border border-white/10" />
-
           <div className="absolute -right-12 -top-16 h-72 w-72 rounded-full border border-[#6BBAEF]/20" />
-
           <div className="absolute bottom-[-200px] left-[-110px] h-[400px] w-[400px] rounded-full bg-[#6BBAEF]/20 blur-[80px]" />
-
-          <motion.div
-            style={{
-              left: glowX,
-              top: glowY,
-            }}
-            className="absolute h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6BBAEF]/15 blur-[80px]"
-          />
+          {!preview && (
+            <motion.div
+              style={{ left: glowX, top: glowY }}
+              className="absolute h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#6BBAEF]/15 blur-[80px]"
+            />
+          )}
         </div>
 
         <div
-          className="relative z-10 flex min-h-[440px] flex-col justify-between gap-8 p-7 sm:min-h-[410px] sm:p-10 md:p-12"
+          className="relative z-10 flex h-full min-h-0 flex-col justify-between gap-2.5 p-3.5 sm:gap-7 sm:p-9 md:p-11"
           style={{ transformStyle: "preserve-3d" }}
         >
-          <Depth
-            z={35}
-            className="flex items-center justify-between gap-3"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#6BBAEF]/30 bg-[#6BBAEF]/15 px-4 py-2 text-xs font-semibold text-white backdrop-blur-md">
+          <Depth z={24} className="flex shrink-0 items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#6BBAEF]/30 bg-[#6BBAEF]/15 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-md sm:gap-2 sm:px-4 sm:py-2 sm:text-xs">
               <MessageCircle
-                size={15}
-                className="text-[#6BBAEF]"
+                size={13}
+                className="text-[#6BBAEF] sm:h-[15px] sm:w-[15px]"
+                aria-hidden="true"
               />
               <p>تجربة مريض</p>
             </div>
-
-            <p className="text-xs font-medium tabular-nums tracking-widest text-white/70">
+            <p className="text-[10px] font-medium tabular-nums tracking-widest text-white/70 sm:text-xs">
               {String(index + 1).padStart(2, "0")}
               {" / "}
               {String(total).padStart(2, "0")}
@@ -159,45 +159,48 @@ export default function Testimonial3DCard({
           </Depth>
 
           <Depth
-            z={65}
-            className="relative max-w-[570px]"
+            z={46}
+            className="flex min-h-0 flex-1 flex-col justify-center"
           >
             <Quote
-              size={58}
+              size={36}
               strokeWidth={1.25}
-              className="mb-5 text-[#6BBAEF]"
+              className="hidden shrink-0 text-[#6BBAEF] sm:mb-4 sm:block sm:h-12 sm:w-12"
+              aria-hidden="true"
             />
-
-            <blockquote className="text-right text-xl font-medium leading-[1.9] tracking-[-0.025em] text-white sm:text-2xl md:text-[30px]">
+            <blockquote
+              className="min-h-0 max-h-full overflow-y-auto overscroll-y-contain px-0.5 text-right text-[14px] font-medium leading-[1.6] text-white [scrollbar-width:thin] [scrollbar-color:#6BBAEF66_transparent] sm:text-[20px] sm:leading-[1.9] lg:text-[22px]"
+              style={{ fontFamily: '"Tajawal", "IBM Plex Sans Arabic", sans-serif' }}
+            >
               {testimonial.quote}
             </blockquote>
           </Depth>
 
           <Depth
-            z={45}
-            className="flex flex-wrap items-center justify-between gap-4 border-t border-[#6BBAEF]/25 pt-6"
+            z={32}
+            className="flex shrink-0 items-center justify-between gap-2 border-t border-[#6BBAEF]/25 pt-2.5 sm:flex-wrap sm:gap-3 sm:pt-5"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#6BBAEF]/30 bg-[#6BBAEF]/20 text-lg font-semibold text-white">
-                {testimonial.name === "رأي مريض"
-                  ? "؟"
-                  : testimonial.name.charAt(0)}
-              </div>
-
-              <div>
-                <p className="font-semibold text-white">
-                  {testimonial.name}
-                </p>
-
-                <p className="mt-1 text-xs font-medium text-white/75">
-                  {testimonial.treatment}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs font-medium text-white/65">
-              {testimonial.date || "رأي قيد الاعتماد"}
+            <p className="text-[11px] font-bold text-white sm:text-base">
+              من مراجعي العيادة
             </p>
+            <div
+              className="flex shrink-0 items-center gap-0.5 sm:gap-1"
+              role="img"
+              aria-label="تقييم خمس نجوم من خمس"
+              dir="ltr"
+            >
+              {Array.from({ length: 5 }, (_, starIndex) => (
+                <Star
+                  key={starIndex}
+                  size={14}
+                  className="sm:h-[19px] sm:w-[19px]"
+                  strokeWidth={1.4}
+                  fill="#F2C35F"
+                  color="#F2C35F"
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
           </Depth>
         </div>
       </motion.div>
