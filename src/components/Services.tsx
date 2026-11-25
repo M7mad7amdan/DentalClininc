@@ -1,17 +1,6 @@
-import { useId, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-} from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpLeft,
-  Check,
-  MoveHorizontal,
-} from "lucide-react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowLeft, ArrowRight, ArrowUpLeft, Check, RotateCcw, Sparkles } from "lucide-react";
 
 type ToothMark =
   | "decay"
@@ -54,6 +43,7 @@ const services: Service[] = [
     ],
     mark: "decay",
     accent: "#EAF6FD",
+    image: "https://images.pexels.com/photos/6502345/pexels-photo-6502345.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "nerve",
@@ -68,6 +58,7 @@ const services: Service[] = [
     ],
     mark: "nerve",
     accent: "#E5F2FC",
+    image: "https://images.pexels.com/photos/6627694/pexels-photo-6627694.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "implant",
@@ -82,6 +73,7 @@ const services: Service[] = [
     ],
     mark: "implant",
     accent: "#E4F1FA",
+    image: "https://images.pexels.com/photos/4687905/pexels-photo-4687905.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "crown",
@@ -96,6 +88,7 @@ const services: Service[] = [
     ],
     mark: "crown",
     accent: "#EDF7FD",
+    image: "https://images.pexels.com/photos/12712256/pexels-photo-12712256.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "filling",
@@ -110,6 +103,7 @@ const services: Service[] = [
     ],
     mark: "filling",
     accent: "#DDEFFB",
+    image: "https://images.pexels.com/photos/31786503/pexels-photo-31786503.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "gum",
@@ -124,6 +118,7 @@ const services: Service[] = [
     ],
     mark: "gum",
     accent: "#EAF5FC",
+    image: "https://images.pexels.com/photos/5794074/pexels-photo-5794074.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "braces",
@@ -138,6 +133,7 @@ const services: Service[] = [
     ],
     mark: "braces",
     accent: "#E3F1FB",
+    image: "https://images.pexels.com/photos/6502309/pexels-photo-6502309.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "whitening",
@@ -152,6 +148,7 @@ const services: Service[] = [
     ],
     mark: "shine",
     accent: "#E7F6FE",
+    image: "https://images.pexels.com/photos/33748059/pexels-photo-33748059.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "bone",
@@ -166,6 +163,7 @@ const services: Service[] = [
     ],
     mark: "bone",
     accent: "#E5F3FC",
+    image: "https://images.pexels.com/photos/6502306/pexels-photo-6502306.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "hollywood",
@@ -180,6 +178,7 @@ const services: Service[] = [
     ],
     mark: "hollywood",
     accent: "#E8F5FE",
+    image: "https://images.pexels.com/photos/6627599/pexels-photo-6627599.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "rehabilitation",
@@ -194,6 +193,7 @@ const services: Service[] = [
     ],
     mark: "rehabilitation",
     accent: "#E4F0FB",
+    image: "https://images.pexels.com/photos/4269365/pexels-photo-4269365.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "digital-smile",
@@ -208,6 +208,7 @@ const services: Service[] = [
     ],
     mark: "digital",
     accent: "#EDF8FE",
+    image: "https://images.pexels.com/photos/4687288/pexels-photo-4687288.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "prosthetics",
@@ -222,6 +223,7 @@ const services: Service[] = [
     ],
     mark: "prosthetics",
     accent: "#E1F0FA",
+    image: "https://images.pexels.com/photos/6502631/pexels-photo-6502631.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
   {
     id: "pediatric",
@@ -236,6 +238,7 @@ const services: Service[] = [
     ],
     mark: "pediatric",
     accent: "#E8F5FC",
+    image: "https://images.pexels.com/photos/9951394/pexels-photo-9951394.jpeg?auto=compress&cs=tinysrgb&w=1100",
   },
 ];
 
@@ -505,371 +508,305 @@ function ToothIllustration({
   );
 }
 
-function ToothImage({
-  service,
-}: {
+type ServiceImageProps = {
   service: Service;
-}) {
-  const [failedImage, setFailedImage] = useState<string | null>(
-    null
-  );
+};
 
-  const showImage =
-    Boolean(service.image) &&
-    failedImage !== service.image;
+function ServiceImage({ service }: ServiceImageProps) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const imageUrl = service.image ?? `/images/service-results/${service.id}.jpg`;
+  const showImage = loaded && !failed;
 
   return (
-    <div className="h-full w-full">
-      {showImage ? (
+    <div className="absolute inset-0 overflow-hidden">
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${showImage ? "opacity-0" : "opacity-100"}`}
+        style={{ background: `radial-gradient(circle at 50% 35%, #FFFFFF, ${service.accent} 70%, #C8E3F5 100%)` }}
+        aria-hidden="true"
+      >
+        <div className="h-[195px] w-[165px] drop-shadow-[0_14px_20px_rgba(3,38,84,0.06)] sm:h-[230px] sm:w-[195px]">
+          <ToothIllustration mark={service.mark} />
+        </div>
+        <p className="absolute inset-x-5 top-6 text-center text-xs font-semibold text-[#426A8B]">
+          {failed ? "رسم توضيحي للخدمة" : "جارٍ تحميل الصورة"}
+        </p>
+      </div>
+      {!failed && (
         <img
-          src={service.image}
-          alt=""
+          src={imageUrl}
+          alt={`صورة فوتوغرافية توضيحية مرتبطة بخدمة ${service.title}، وليست من حالات العيادة`}
           loading="lazy"
+          decoding="async"
           draggable={false}
-          onError={() =>
-            setFailedImage(service.image ?? null)
-          }
-          className="h-full w-full object-contain drop-shadow-[0_18px_16px_rgba(3,38,84,0.15)]"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+          className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ${showImage ? "opacity-100" : "opacity-0"}`}
         />
-      ) : (
-        <ToothIllustration mark={service.mark} />
       )}
     </div>
   );
 }
 
-export default function Services() {
-  const [active, setActive] = useState(0);
-  const railRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = useReducedMotion();
+type FlipServiceCardProps = {
+  service: Service;
+  index: number;
+  flipped: boolean;
+  onFlip: () => void;
+  reducedMotion: boolean;
+};
 
-  const selected = services[active];
+function FlipServiceCard({ service, index, flipped, onFlip, reducedMotion }: FlipServiceCardProps) {
+  const backTitleId = `service-back-${service.id}`;
 
-  const selectService = (index: number) => {
-    const nextIndex =
-      (index + services.length) % services.length;
-
-    setActive(nextIndex);
-
-    const button =
-      railRef.current?.querySelectorAll<HTMLButtonElement>(
-        "[data-service-button]"
-      )[nextIndex];
-
-    button?.scrollIntoView({
-      behavior: reducedMotion ? "instant" : "smooth",
-      block: "nearest",
-      inline: "center",
-    });
-  };
-
-  const next = () => selectService(active + 1);
-  const previous = () => selectService(active - 1);
-
-  const handleRailKeyDown = (
-    event: KeyboardEvent<HTMLDivElement>
-  ) => {
-    if (event.key !== "ArrowLeft" &&
-        event.key !== "ArrowRight") {
+  const chooseForBooking = () => {
+    try {
+      window.sessionStorage.setItem("selectedDentalService", service.title);
+    } catch {
+      window.dispatchEvent(new CustomEvent("dental-service-selected", { detail: service.title }));
       return;
     }
+    window.dispatchEvent(new CustomEvent("dental-service-selected", { detail: service.title }));
+    window.dispatchEvent(new Event("hashchange"));
+  };
 
-    event.preventDefault();
+  return (
+    <motion.article
+      className="relative h-[440px] w-[88%] shrink-0 snap-start sm:h-[470px] sm:w-[calc(50%_-_10px)] lg:h-[486px] lg:w-[calc(33.333333%_-_13.333333px)]"
+      style={{ perspective: "1500px" }}
+      whileHover={reducedMotion ? undefined : { y: -4 }}
+      transition={{ duration: 0.3 }}
+      aria-label={`خدمة ${service.title}`}
+    >
+      <motion.div
+        className="relative h-full w-full rounded-[28px]"
+        initial={false}
+        animate={{ rotateY: flipped ? 180 : 0 }}
+        transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 155, damping: 22, mass: 0.85 }}
+        style={{ transformStyle: "preserve-3d" }}
+      >
+        <div
+          className={`absolute inset-0 overflow-hidden rounded-[28px] border border-[#D4E6F2] bg-[#EAF6FD] shadow-[0_18px_40px_rgba(3,38,84,0.11)] ${flipped ? "pointer-events-none" : ""}`}
+          style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+          aria-hidden={flipped}
+        >
+          <ServiceImage service={service} />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#021E3E] via-[#032654]/45 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-5 top-5 flex items-center justify-between gap-3">
+            <p className="rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm">
+              {String(index + 1).padStart(2, "0")}
+            </p>
+            <p className="rounded-full border border-white/25 bg-[#032654]/45 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur-sm">
+              صورة توضيحية
+            </p>
+          </div>
+          <div className="pointer-events-none absolute inset-x-6 bottom-8 text-right">
+            <p className="mb-2 text-[12px] font-medium text-[#D3EDFF]">{service.subtitle}</p>
+            <h3 className="max-w-[94%] text-[23px] font-bold leading-[1.55] text-white sm:text-[25px]">
+              {service.title}
+            </h3>
+            <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-[#E3F4FF]">
+              <RotateCcw size={16} aria-hidden="true" />
+              اضغط لتفاصيل الخدمة
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onFlip}
+            tabIndex={flipped ? -1 : 0}
+            aria-label={`اقلب بطاقة ${service.title} لقراءة التفاصيل`}
+            className="absolute inset-0 z-10 cursor-pointer rounded-[28px] focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#287DB7]"
+          />
+        </div>
 
-    const nextIndex =
-      event.key === "ArrowLeft"
-        ? (active + 1) % services.length
-        : (active - 1 + services.length) %
-          services.length;
+        <div
+          className={`absolute inset-0 flex flex-col overflow-hidden rounded-[28px] border border-[#6BBAEF]/35 bg-[#032654] text-white shadow-[0_20px_50px_rgba(3,38,84,0.18)] ${flipped ? "" : "pointer-events-none"}`}
+          style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+          aria-hidden={!flipped}
+          aria-labelledby={backTitleId}
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-white/15 px-5 py-4 sm:px-6">
+            <p className="text-xs font-semibold text-[#A7D9F5]">الخدمة {String(index + 1).padStart(2, "0")}</p>
+            <button
+              type="button"
+              onClick={onFlip}
+              tabIndex={flipped ? 0 : -1}
+              aria-label={`العودة إلى صورة ${service.title}`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <RotateCcw size={17} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-3 pt-5 [scrollbar-width:thin] sm:px-6">
+            <h3 id={backTitleId} className="text-xl font-bold leading-[1.55] text-white sm:text-[23px]">
+              {service.title}
+            </h3>
+            <p className="mt-3 text-[13px] leading-[1.85] text-[#D9E8F4] sm:text-sm">
+              {service.description}
+            </p>
+            <div className="mt-5 border-t border-white/15 pt-4">
+              <p className="mb-3 text-xs font-bold text-[#9BD5F5]">ما تتضمنه الخدمة</p>
+              <div className="grid gap-2">
+                {service.benefits.map((benefit) => (
+                  <div key={benefit} className="flex items-start gap-2 text-[12px] leading-6 text-[#EAF5FD] sm:text-[13px]">
+                    <Check className="mt-1 h-[15px] w-[15px] shrink-0 text-[#91D0F3]" aria-hidden="true" />
+                    <p>{benefit}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="shrink-0 border-t border-white/15 bg-[#032654] px-5 py-4 sm:px-6">
+            <a
+              href="#contact"
+              onClick={chooseForBooking}
+              tabIndex={flipped ? 0 : -1}
+              className="group flex min-h-11 items-center justify-between gap-3 rounded-full bg-white px-5 text-sm font-bold text-[#032654] transition-colors hover:bg-[#C8E8FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              استفسر عن الخدمة
+              <ArrowUpLeft size={18} aria-hidden="true" className="transition-transform group-hover:-translate-x-1 group-hover:-translate-y-1" />
+            </a>
+          </div>
+        </div>
+      </motion.div>
+    </motion.article>
+  );
+}
 
-    selectService(nextIndex);
+export default function Services() {
+  const reducedMotion = Boolean(useReducedMotion());
+  const railRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [perPage, setPerPage] = useState(1);
+  const [flippedId, setFlippedId] = useState<string | null>(null);
+  const maxStart = Math.max(0, services.length - perPage);
+  const visibleIndex = Math.min(activeIndex, maxStart);
 
-    railRef.current
-      ?.querySelectorAll<HTMLButtonElement>(
-        "[data-service-button]"
-      )[nextIndex]
-      ?.focus({ preventScroll: true });
+  useEffect(() => {
+    const update = () => {
+      setPerPage(window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const goTo = useCallback((index: number) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const bounded = Math.max(0, Math.min(index, Math.max(0, services.length - perPage)));
+    const card = rail.children[bounded] as HTMLElement | undefined;
+    if (!card) return;
+    const railRect = rail.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    rail.scrollBy({
+      left: cardRect.right - railRect.right,
+      behavior: reducedMotion ? "instant" : "smooth",
+    });
+    setActiveIndex(bounded);
+    setFlippedId(null);
+  }, [perPage, reducedMotion]);
+
+  const syncActiveOnScroll = () => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const rightEdge = rail.getBoundingClientRect().right;
+    let closest = 0;
+    let minDistance = Number.POSITIVE_INFINITY;
+    Array.from(rail.children).forEach((child, index) => {
+      const distance = Math.abs(child.getBoundingClientRect().right - rightEdge);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = index;
+      }
+    });
+    setActiveIndex(Math.min(closest, Math.max(0, services.length - perPage)));
   };
 
   return (
     <section
       id="services"
       dir="rtl"
-      className="relative overflow-hidden bg-[#F8FAFC] py-20 text-[#032654] md:py-28"
+      aria-labelledby="services-heading"
+      className="scroll-mt-28 overflow-hidden bg-[#F8FAFC] py-20 text-[#032654] md:py-28"
+      style={{ fontFamily: '"IBM Plex Sans Arabic", "Tajawal", sans-serif' }}
     >
-      <div className="mx-auto max-w-7xl px-4 md:px-8">
-
-        <header className="mx-auto max-w-2xl text-center">
-          <p className="mb-4 text-sm font-semibold text-[#466B91]">
-            خدمات عيادة د. رأفت ماجد
-          </p>
-
-          <h2 className="text-4xl font-bold leading-[1.4] md:text-6xl">
-            لكل سن حكاية
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-10">
+        <motion.header
+          initial={reducedMotion ? false : { opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: reducedMotion ? 0 : 0.65 }}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <p className="mb-4 text-sm font-semibold text-[#327CA9]">خدمات عيادتنا</p>
+          <h2 id="services-heading" className="text-[37px] font-bold leading-[1.4] sm:text-5xl lg:text-[58px]">
+            كل ابتسامة تستحق عناية خاصة
           </h2>
-
-          <p className="mx-auto mt-5 max-w-xl text-base font-medium leading-8 text-[#475569]">
-            اختر أحد الأسنان لتتعرف على الخدمة،
-            تفاصيلها، وكيف يمكن أن تساعدك.
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 text-[#52677C] sm:text-base">
+            تعرّف على خدمات العيادة، وشاهد الصور المرتبطة بكل خدمة، ثم اقلب البطاقة لاستكشاف التفاصيل.
           </p>
-        </header>
+        </motion.header>
 
-        <div className="relative mt-14 md:mt-20">
-
-          <div className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-gradient-to-l from-transparent via-[#C7DDEC] to-transparent" />
-
-          <div
-            ref={railRef}
-            onKeyDown={handleRailKeyDown}
-            role="group"
-            aria-label="خدمات العيادة"
-            className="relative flex snap-x snap-mandatory items-end gap-4 overflow-x-auto px-4 pb-10 pt-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {services.map((service, index) => {
-              const isActive = index === active;
-
-              return (
-                <motion.button
-                  key={service.id}
-                  data-service-button
-                  type="button"
-                  onClick={() => selectService(index)}
-                  aria-pressed={isActive}
-                  aria-label={`عرض تفاصيل ${service.title}`}
-                  animate={{
-                    y:
-                      reducedMotion
-                        ? 0
-                        : isActive
-                          ? -12
-                          : 0,
-                    scale:
-                      reducedMotion
-                        ? 1
-                        : isActive
-                          ? 1.05
-                          : 0.96,
-                    opacity: isActive ? 1 : 0.85,
-                  }}
-                  whileHover={
-                    reducedMotion
-                      ? undefined
-                      : { y: -15, opacity: 1 }
-                  }
-                  transition={{
-                    type: "spring",
-                    stiffness: 240,
-                    damping: 23,
-                  }}
-                  className="group flex w-[140px] shrink-0 snap-center flex-col items-center outline-none focus-visible:rounded-[30px] focus-visible:ring-2 focus-visible:ring-[#032654] sm:w-[160px]"
-                >
-
-                  <div
-                    className={`relative flex h-[180px] w-full items-center justify-center overflow-hidden rounded-[30px] border p-5 transition-[background,border-color,box-shadow] duration-300 sm:h-[205px] ${
-                      isActive
-                        ? "border-[#8CCAEF] bg-[#E9F5FD] shadow-[0_22px_45px_rgba(3,38,84,0.15)]"
-                        : "border-[#DFEAF4] bg-white shadow-[0_10px_25px_rgba(3,38,84,0.05)] group-hover:bg-white"
-                    }`}
-                  >
-                    <div
-                      className="pointer-events-none absolute inset-0"
-                      style={{
-                        background: `radial-gradient(circle at 50% 38%, ${service.accent}, transparent 78%)`,
-                      }}
-                    />
-
-                    <motion.div
-                      className="relative z-10 h-full w-full"
-                      animate={{
-                        rotate:
-                          reducedMotion || isActive
-                            ? 0
-                            : index % 2 === 0
-                              ? -4
-                              : 4,
-                      }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <ToothImage service={service} />
-                    </motion.div>
-
-                    <p className="absolute right-3 top-3 text-xs font-semibold text-[#587493]">
-                      {String(index + 1).padStart(2, "0")}
-                    </p>
-
-                    {isActive && (
-                      <motion.div
-                        layoutId="service-active-check"
-                        className="absolute bottom-3 flex h-6 w-6 items-center justify-center rounded-full bg-[#032654] text-white"
-                      >
-                        <Check size={14} />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  <p
-                    className={`mt-5 min-h-[44px] px-1 text-center text-sm font-semibold leading-6 ${
-                      isActive
-                        ? "text-[#032654]"
-                        : "text-[#64748B]"
-                    }`}
-                  >
-                    {service.title}
-                  </p>
-                </motion.button>
-              );
-            })}
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 sm:mt-14">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[#456A89]">
+            <Sparkles size={18} aria-hidden="true" className="text-[#287DB7]" />
+            <p>{services.length} خدمة علاجية وتجميلية</p>
           </div>
+          <p className="text-xs font-medium text-[#71889D]">اضغط على الصورة لقلب البطاقة</p>
         </div>
 
-        <div className="mt-2 flex items-center justify-center gap-5">
-          <button
-            type="button"
-            onClick={previous}
-            aria-label="الخدمة السابقة"
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CDDDEB] bg-white transition-colors hover:border-[#6BBAEF] hover:bg-[#6BBAEF] hover:text-[#032654]"
-          >
-            <ArrowRight size={20} />
-          </button>
+        <div
+          ref={railRef}
+          onScroll={syncActiveOnScroll}
+          role="region"
+          aria-label="معرض خدمات العيادة"
+          className="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain px-1 pb-9 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollPaddingInline: "4px" }}
+        >
+          {services.map((service, index) => (
+            <FlipServiceCard
+              key={service.id}
+              service={service}
+              index={index}
+              flipped={flippedId === service.id}
+              reducedMotion={reducedMotion}
+              onFlip={() => setFlippedId((current) => current === service.id ? null : service.id)}
+            />
+          ))}
+        </div>
 
-          <p className="text-sm font-bold tabular-nums text-[#475569]">
-            {String(active + 1).padStart(2, "0")}
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-t border-[#DFEAF3] pt-6">
+          <p dir="ltr" className="text-sm font-bold tabular-nums text-[#456A89]" aria-live="polite">
+            {String(visibleIndex + 1).padStart(2, "0")}
+            {perPage > 1 ? `–${String(Math.min(visibleIndex + perPage, services.length)).padStart(2, "0")}` : ""}
             {" / "}
             {String(services.length).padStart(2, "0")}
           </p>
-
-          <button
-            type="button"
-            onClick={next}
-            aria-label="الخدمة التالية"
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-[#CDDDEB] bg-white transition-colors hover:border-[#6BBAEF] hover:bg-[#6BBAEF] hover:text-[#032654]"
-          >
-            <ArrowLeft size={20} />
-          </button>
-        </div>
-
-        <div className="mx-auto mt-12 max-w-5xl md:mt-16">
-          <div className="overflow-hidden rounded-[30px] border border-[#DEEAF3] bg-white shadow-[0_24px_65px_rgba(3,38,84,0.08)]">
-
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selected.id}
-                initial={
-                  reducedMotion
-                    ? false
-                    : { opacity: 0, x: 22 }
-                }
-                animate={{ opacity: 1, x: 0 }}
-                exit={
-                  reducedMotion
-                    ? { opacity: 1 }
-                    : { opacity: 0, x: -22 }
-                }
-                transition={{
-                  duration: reducedMotion ? 0 : 0.3,
-                }}
-                className="grid items-center gap-8 p-6 md:grid-cols-[1.2fr_0.8fr] md:gap-12 md:p-10 lg:p-12"
-              >
-
-                <div className="text-right">
-                  <p className="mb-4 text-sm font-semibold text-[#327CA9]">
-                    تعرف على الخدمة
-                  </p>
-
-                  <p className="mb-3 text-base font-medium text-[#456785]">
-                    {selected.subtitle}
-                  </p>
-
-                  <h3 className="text-3xl font-bold leading-[1.4] text-[#032654] md:text-5xl">
-                    {selected.title}
-                  </h3>
-
-                  <p className="mt-6 max-w-xl text-base font-medium leading-9 text-[#475569]">
-                    {selected.description}
-                  </p>
-
-                  <div className="mt-8 flex flex-wrap gap-3">
-                    {selected.benefits.map((benefit) => (
-                      <div
-                        key={benefit}
-                        className="flex items-center gap-2 rounded-full border border-[#D5E5F1] bg-[#F3F9FD] px-4 py-2.5"
-                      >
-                        <Check
-                          size={16}
-                          className="text-[#137CB4]"
-                        />
-
-                        <p className="text-sm font-semibold text-[#174A72]">
-                          {benefit}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <a
-                    href="#contact"
-                    onClick={() => {
-                      sessionStorage.setItem(
-                        "selectedDentalService",
-                        selected.title
-                      );
-
-                      window.dispatchEvent(
-                        new CustomEvent(
-                          "dental-service-selected",
-                          { detail: selected.title }
-                        )
-                      );
-                    }}
-                    className="mt-9 inline-flex min-h-14 items-center gap-3 rounded-full bg-[#032654] px-7 text-base font-semibold text-white shadow-[0_12px_26px_rgba(3,38,84,0.12)] transition-colors hover:bg-[#08427C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#6BBAEF]"
-                  >
-                    استفسر عن الخدمة
-                    <ArrowUpLeft size={19} />
-                  </a>
-                </div>
-
-                <div
-                  className="relative flex min-h-[270px] items-center justify-center overflow-hidden rounded-[26px] md:min-h-[330px]"
-                  style={{
-                    background: `radial-gradient(circle at center, ${selected.accent}, #F7FBFF 78%)`,
-                  }}
-                >
-                  <div className="pointer-events-none absolute h-52 w-52 rounded-full border border-white/65" />
-                  <div className="pointer-events-none absolute h-72 w-72 rounded-full border border-white/40" />
-
-                  <motion.div
-                    initial={
-                      reducedMotion
-                        ? false
-                        : { scale: 0.85, rotate: -8 }
-                    }
-                    animate={{
-                      scale: 1,
-                      rotate: 0,
-                    }}
-                    transition={{
-                      duration: reducedMotion ? 0 : 0.45,
-                    }}
-                    className="relative z-10 h-52 w-52 md:h-64 md:w-64"
-                  >
-                    <ToothImage service={selected} />
-                  </motion.div>
-
-                  <p className="absolute bottom-5 left-5 rounded-full bg-white/75 px-4 py-2 text-xs font-semibold text-[#475569]">
-                    {String(active + 1).padStart(2, "0")}
-                    {" / "}
-                    {String(services.length).padStart(2, "0")}
-                  </p>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => goTo(visibleIndex - 1)}
+              disabled={visibleIndex === 0}
+              aria-label="الخدمات السابقة"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-[#BDD8EA] bg-white text-[#032654] transition-colors hover:border-[#6BBAEF] hover:bg-[#E5F4FD] disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#287DB7]"
+            >
+              <ArrowRight size={21} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => goTo(visibleIndex + 1)}
+              disabled={visibleIndex >= maxStart}
+              aria-label="الخدمات التالية"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-[#032654] text-white transition-colors hover:bg-[#145080] disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#287DB7]"
+            >
+              <ArrowLeft size={21} aria-hidden="true" />
+            </button>
           </div>
         </div>
-
-        <div className="mt-8 flex items-center justify-center gap-2 text-sm font-medium text-[#587493]">
-          <MoveHorizontal size={18} />
-          <p>اختر أي سن لاستكشاف تفاصيل الخدمة</p>
-        </div>
+        <p className="mt-4 text-xs leading-7 text-[#60768C]">
+          الصور الحالية فوتوغرافية توضيحية من Pexels وليست لحالات أو نتائج علاجية من العيادة. يُستبدل بها لاحقًا صور حالات حقيقية بعد موافقة أصحابها. تختلف طرق العلاج ونتائجه من حالة لأخرى.
+        </p>
       </div>
     </section>
   );
