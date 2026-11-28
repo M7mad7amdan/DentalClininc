@@ -57,6 +57,7 @@ export default function Booking() {
   });
 
   const [error, setError] = useState("");
+  const [callbackRequested, setCallbackRequested] = useState(false);
 
   const phoneDigits = form.phone.replace(/\D/g, "");
   const phoneValid =
@@ -104,6 +105,33 @@ export default function Booking() {
         "hashchange",
         loadSelectedService
       );
+    };
+  }, []);
+
+  useEffect(() => {
+    const fillCallbackRequest = () => {
+      let isRequested = false;
+      try {
+        isRequested = sessionStorage.getItem("clinicCallbackRequest") === "1";
+        if (isRequested) sessionStorage.removeItem("clinicCallbackRequest");
+      } catch {
+        isRequested = true;
+      }
+      if (!isRequested) return;
+      setCallbackRequested(true);
+      setForm((previous) => ({
+        ...previous,
+        service: previous.service || "استشارة عامة",
+        notes: previous.notes.trim()
+          ? previous.notes
+          : "أفضّل أن تتواصل معي العيادة هاتفيًا لتنسيق الموعد.",
+      }));
+    };
+
+    fillCallbackRequest();
+    window.addEventListener("clinic-callback-request", fillCallbackRequest);
+    return () => {
+      window.removeEventListener("clinic-callback-request", fillCallbackRequest);
     };
   }, []);
 
@@ -311,6 +339,15 @@ export default function Booking() {
                   : "أكمل الحقول المطلوبة للمتابعة عبر واتساب."}
               </p>
             </div>
+
+            {callbackRequested && (
+              <div role="status" className="mt-7 rounded-2xl border border-[#DFCCBC] bg-[#FCF5EF] px-5 py-4 text-[#724B35]">
+                <p className="text-base font-bold">طلب معاودة الاتصال</p>
+                <p className="mt-2 text-sm leading-7">
+                  املأ بياناتك، ثم اضغط «متابعة عبر واتساب» لإرسال طلب التواصل إلى العيادة. لا يتم إرسال الطلب تلقائيًا.
+                </p>
+              </div>
+            )}
 
             <form
               onSubmit={handleSubmit}
